@@ -31,8 +31,8 @@ export default function Search({ placeholder }: { placeholder: string }) {
   function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
     const params = new URLSearchParams(searchParams);
     const term = event.target.value;
-    console.log(`Searching... ${term}`);
 
+    params.set('page', '1');
     if (term) {
       params.set('search', term);
     } else {
