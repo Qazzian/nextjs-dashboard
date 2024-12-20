@@ -5,6 +5,9 @@ import {sql} from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect  } from "next/navigation.js";
 
+import {signIn} from '@/auth';
+import {AuthError} from 'next-auth';
+
 export type State = {
 	errors?: {
 		customerId?: string[];
@@ -90,7 +93,7 @@ export async function updateInvoice(id: string, formData: FormData) {
 }
 
 export async function deleteInvoice(id: string) {
-	throw new Error('Failed to Delete Invoice');
+	// throw new Error('Failed to Delete Invoice');
 	try {
 		await sql`delete from invoices where id=${id}`;
 		revalidatePath('/dashboard/invoices');
@@ -98,6 +101,25 @@ export async function deleteInvoice(id: string) {
 	}
 	catch {
 		return { message: 'Database Error: Failed to Delete invoice.' };
+	}
+}
+
+export async function authenticate(
+		prevState: string | undefined,
+		formData: FormData,
+) {
+	try {
+		await signIn('credentials', formData);
+	} catch (error) {
+		if (error instanceof AuthError) {
+			switch (error.type) {
+				case 'CredentialsSignin':
+					return 'Invalid credentials.';
+				default:
+					return 'Something went wrong.';
+			}
+		}
+		throw error;
 	}
 }
 
